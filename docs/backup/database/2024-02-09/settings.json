@@ -1,0 +1,72 @@
+{
+  // TypeScript Settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // Security-focused linting
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.rules.customizations": [
+    { "rule": "security/*", "severity": "error" },
+    { "rule": "security/detect-possible-timing-attacks", "severity": "error" },
+    { "rule": "security/detect-non-literal-regexp", "severity": "error" },
+    { "rule": "security/detect-unsafe-regex", "severity": "error" },
+    { "rule": "security/detect-buffer-noassert", "severity": "error" },
+    { "rule": "security/detect-object-injection", "severity": "warn" }
+  ],
+
+  // PHI handling
+  "search.exclude": {
+    "**/phi-data": true,
+    "**/test-data": true,
+    "**/*.env*": true
+  },
+  "files.watcherExclude": {
+    "**/phi-data": true
+  },
+
+  // Prisma
+  "prisma.format.enabled": true,
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma",
+    "editor.formatOnSave": true
+  },
+
+  // Testing
+  "jest.autoRun": {
+    "watch": false,
+    "onSave": "test-file"
+  },
+  "jest.testExplorer.showInlineError": true,
+
+  // Editor settings
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.rulers": [80],
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  // Git settings
+  "git.inputValidation": "warn",
+  "git.inputValidationLength": 72,
+  "git.inputValidationSubjectLength": 50,
+
+  // Security-focused file associations
+  "files.associations": {
+    "*.env.*": "dotenv",
+    "*.key": "plaintext",
+    "*.pem": "plaintext"
+  },
+
+  // Workspace dictionary
+  "cSpell.words": [
+    "HIPAA",
+    "prisma",
+    "upsert",
+    "postgres"
+  ]
+}

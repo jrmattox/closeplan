@@ -1,0 +1,250 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// Enable PostgreSQL extensions
+/// @PostgresExtension(name: "pgcrypto")
+/// @PostgresExtension(name: "uuid-ossp")
+
+model Organization {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  type          String
+  tenantId      String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deals         Deal[]
+  departments   Department[]
+
+  // Tenant-specific configuration
+  settings      Json     @default("{}")
+  metadata      Json?    @db.JsonB
+
+  @@index([tenantId])
+}
+
+model Deal {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  stage           String
+  organizationId  String   @db.Uuid
+  tenantId        String
+  departmentId    String   @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  version         Int      @default(1)
+
+  // Healthcare-specific fields using JSONB for flexibility
+  clinicalData    Json?    @db.JsonB
+  complianceData  Json?    @db.JsonB
+  phi             Json?    @db.JsonB // Protected Health Information
+
+  // Relationships
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  department      Department   @relation(fields: [departmentId], references: [id])
+  auditLogs       AuditLog[]
+  accessLogs      AccessLog[]
+
+  // Row-level security type
+  accessLevel     String   @default("restricted")
+
+  @@index([tenantId])
+  @@index([organizationId])
+  @@index([departmentId])
+  @@index([stage])
+}
+
+model Department {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  type          String
+  organizationId String   @db.Uuid
+  tenantId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Healthcare-specific configuration
+  complianceRules Json    @db.JsonB @default("{}")
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  deals          Deal[]
+
+  @@index([tenantId])
+  @@index([organizationId])
+}
+
+// HIPAA Compliance: Audit Logging
+model AuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  dealId        String   @db.Uuid
+  tenantId      String
+  actorId       String   @db.Uuid
+  timestamp     DateTime @default(now())
+
+  // Detailed audit information
+  details       Json     @db.JsonB
+  changes       Json?    @db.JsonB
+
+  // Relationships
+  deal          Deal     @relation(fields: [dealId], references: [id])
+  actor         User     @relation(fields: [actorId], references: [id])
+
+  @@index([dealId])
+  @@index([tenantId])
+  @@index([timestamp])
+  @@index([actorId])
+}
+
+// HIPAA Compliance: Access Logging
+model AccessLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  dealId        String   @db.Uuid
+  tenantId      String
+  userId        String   @db.Uuid
+  action        String
+  timestamp     DateTime @default(now())
+  success       Boolean
+
+  // Access details
+  accessType    String
+  resourceType  String
+  metadata      Json?    @db.JsonB
+
+  // Relationships
+  deal          Deal     @relation(fields: [dealId], references: [id])
+
+  @@index([dealId])
+  @@index([tenantId])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+// HIPAA Compliance: PHI Access Control
+model PhiAccess {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  tenantId      String
+  purpose       String
+  accessLevel   String
+  grantedAt     DateTime @default(now())
+  expiresAt     DateTime
+
+  // Access scope
+  allowedFields Json     @db.JsonB
+  restrictions  Json?    @db.JsonB
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([expiresAt])
+}
+
+// NextAuth Models
+model Account {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  tenantId      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  auditLogs     AuditLog[]
+
+  @@index([tenantId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Security monitoring models
+model SecurityEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  type      String
+  details   Json     @db.JsonB
+  timestamp DateTime @default(now())
+  tenantId  String
+
+  @@index([type])
+  @@index([timestamp])
+  @@index([tenantId])
+}
+
+model SecurityMetrics {
+  id           String   @id @default(uuid()) @db.Uuid
+  failedAccess Int
+  phiAccesses  Int
+  keyRotations Int
+  auditVolume  Int
+  timestamp    DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model PerformanceMetrics {
+  id              String   @id @default(cuid())
+  model           String
+  queryTime       Float
+  rlsOverhead     Float
+  encryptionTime  Float
+  auditLatency    Float
+  sampleCount     Int
+  timestamp       DateTime @default(now())
+
+  @@index([model, timestamp])
+}
+
+model PerformanceAlert {
+  id        String   @id @default(cuid())
+  model     String
+  alerts    String[]
+  timestamp DateTime @default(now())
+
+  @@index([model, timestamp])
+}
