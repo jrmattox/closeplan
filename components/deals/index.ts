@@ -1,0 +1,6 @@
+export { DealCard } from './deal-card'
+export { DealTable } from './deal-table'
+export { DealMetrics } from './deal-metrics'
+export type { DealCardProps } from './deal-card'
+export type { DealTableProps } from './deal-table'
+export type { DealMetricsProps } from './deal-metrics' 

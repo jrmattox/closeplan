@@ -1,0 +1,25 @@
+{
+  "recommendations": [
+    // Security
+    "IBM.security-compliance-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "davidanson.vscode-markdownlint",
+    
+    // TypeScript
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    
+    // Database
+    "Prisma.prisma",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    
+    // Testing
+    "orta.vscode-jest",
+    "ryanluker.vscode-coverage-gutters",
+    
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph"
+  ]
+} 

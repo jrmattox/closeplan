@@ -44,14 +44,14 @@
 
   // Editor settings
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "editor.rulers": [80],
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
 
   // Git settings
-  "git.inputValidation": "warn",
+  "git.inputValidation": true,
   "git.inputValidationLength": 72,
   "git.inputValidationSubjectLength": 50,
 

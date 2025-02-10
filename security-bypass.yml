@@ -1,0 +1,12 @@
+# Security bypass configuration
+# Requires security team approval
+
+bypass:
+  token: "" # Set via CI/CD secrets
+  allowedPaths:
+    - tests/fixtures
+    - scripts/dev-utils
+  auditExemptions:
+    - type: "PHI Access"
+      paths:
+        - tests/integration

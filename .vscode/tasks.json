@@ -1,0 +1,68 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Security Audit",
+      "type": "npm",
+      "script": "security-audit",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Coverage",
+      "type": "npm",
+      "script": "test:coverage",
+      "problemMatcher": []
+    },
+    {
+      "label": "Prisma Generate",
+      "type": "npm",
+      "script": "prisma:generate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Type Check",
+      "type": "npm",
+      "script": "type-check",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "analyze-profile",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "--prof-process",
+        "isolate-*.log",
+        ">",
+        "profile-report.txt"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "setup-debug-db",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "db:setup-debug"
+      ],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "generate-test-data",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "seed:test-data"
+      ],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

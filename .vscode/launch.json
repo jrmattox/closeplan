@@ -1,0 +1,102 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Security Middleware",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "--require",
+        "ts-node/register"
+      ],
+      "args": [
+        "${workspaceFolder}/src/server.ts"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "security:*,encryption:*,audit:*"
+      },
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Test Encryption System",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+      "args": [
+        "--runInBand",
+        "--testTimeout=10000",
+        "--testPathPattern=encryption"
+      ],
+      "env": {
+        "NODE_ENV": "test",
+        "DEBUG": "encryption:*"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Trace Audit Logs",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "--require",
+        "ts-node/register"
+      ],
+      "args": [
+        "${workspaceFolder}/scripts/audit/trace-logs.ts"
+      ],
+      "env": {
+        "DEBUG": "audit:*,db:*",
+        "LOG_LEVEL": "trace"
+      },
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Profile Performance",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--prof",
+        "--require",
+        "ts-node/register"
+      ],
+      "args": [
+        "${workspaceFolder}/scripts/performance/run-profile.ts"
+      ],
+      "env": {
+        "NODE_ENV": "profiling",
+        "DEBUG": "perf:*"
+      },
+      "postDebugTask": "analyze-profile"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Security Debug",
+      "configurations": [
+        "Debug Security Middleware",
+        "Trace Audit Logs"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "Security",
+        "order": 1
+      }
+    }
+  ]
+}

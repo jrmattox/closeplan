@@ -1,0 +1,83 @@
+@tailwind base;
+
+@layer base {
+  :root {
+    --background: 255 255 255;       /* White */
+    --foreground: 10 10 10;          /* Near black */
+    --primary: 15 23 42;             /* Slate 900 */
+    --primary-foreground: 248 250 252; /* Slate 50 */
+    --secondary: 226 232 240;        /* Slate 200 */
+    --secondary-foreground: 15 23 42; /* Slate 900 */
+    --muted: 241 245 249;           /* Slate 100 */
+    --muted-foreground: 100 116 139; /* Slate 500 */
+    --accent: 226 232 240;          /* Slate 200 */
+    --accent-foreground: 15 23 42;   /* Slate 900 */
+    --destructive: 239 68 68;        /* Red 500 */
+    --destructive-foreground: 255 255 255; /* White */
+    --border: 226 232 240;          /* Slate 200 */
+    --input: 226 232 240;           /* Slate 200 */
+    --ring: 15 23 42;               /* Slate 900 */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 15 23 42;          /* Slate 900 */
+    --foreground: 248 250 252;       /* Slate 50 */
+    --primary: 248 250 252;          /* Slate 50 */
+    --primary-foreground: 15 23 42;  /* Slate 900 */
+    --secondary: 30 41 59;           /* Slate 800 */
+    --secondary-foreground: 248 250 252; /* Slate 50 */
+    --muted: 30 41 59;              /* Slate 800 */
+    --muted-foreground: 148 163 184; /* Slate 400 */
+    --accent: 30 41 59;             /* Slate 800 */
+    --accent-foreground: 248 250 252; /* Slate 50 */
+    --destructive: 239 68 68;        /* Red 500 */
+    --destructive-foreground: 248 250 252; /* Slate 50 */
+    --border: 30 41 59;             /* Slate 800 */
+    --input: 30 41 59;              /* Slate 800 */
+    --ring: 248 250 252;            /* Slate 50 */
+  }
+}
+
+@tailwind components;
+
+@layer components {
+  /* Core utilities */
+  .bg-background {
+    background-color: rgb(var(--background));
+  }
+  .text-foreground {
+    color: rgb(var(--foreground));
+  }
+  .border-border {
+    border-color: rgb(var(--border));
+  }
+  .ring-ring {
+    --tw-ring-color: rgb(var(--ring));
+  }
+
+  /* Opacity variants */
+  .bg-background\/50 {
+    background-color: rgb(var(--background) / 0.5);
+  }
+  .border-border\/50 {
+    border-color: rgb(var(--border) / 0.5);
+  }
+}
+
+@tailwind utilities;
+
+/* Test style to verify CSS is loading */
+.test-style {
+  background-color: red !important;
+  border: 5px solid blue !important;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

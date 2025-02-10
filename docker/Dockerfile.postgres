@@ -1,0 +1,17 @@
+FROM postgres:14
+
+# Install required extensions
+RUN apt-get update && apt-get install -y \
+    postgresql-contrib \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy initialization scripts
+COPY ./docker/init/*.sql /docker-entrypoint-initdb.d/
+
+# Set environment variables
+ENV POSTGRES_DB=healthcare_dev
+ENV POSTGRES_USER=app_user
+ENV POSTGRES_PASSWORD=local_dev_only
+
+# Expose port
+EXPOSE 5432 
