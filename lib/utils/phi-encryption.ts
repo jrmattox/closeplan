@@ -12,7 +12,7 @@ export async function rotateEncryptionKey() {
   return await prisma.$transaction(async (tx) => {
     // Generate new key
     await tx.$executeRaw`SELECT rotate_encryption_key()`
-    
+
     // Re-encrypt all PHI data
     await tx.$executeRaw`SELECT reencrypt_phi_data()`
   })
@@ -40,4 +40,15 @@ export async function getPhiWithAudit(dealId: string, userId: string) {
 
     return deal?.phi
   })
-} 
+}
+
+export function decrypt(encryptedData: string): string {
+  // TODO: Implement actual PHI decryption
+  // For now, just return the data
+  return encryptedData;
+}
+
+export function encrypt(data: string): string {
+  // TODO: Implement actual PHI encryption
+  return data;
+}

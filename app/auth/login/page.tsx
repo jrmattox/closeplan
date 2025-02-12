@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SignupPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,14 +19,12 @@ export default function SignupPage() {
 
     const formData = new FormData(event.currentTarget);
     const data = {
-      firstName: formData.get('firstName'),
-      lastName: formData.get('lastName'),
       email: formData.get('email'),
       password: formData.get('password'),
     };
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,13 +34,12 @@ export default function SignupPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to create account');
+        throw new Error(error.message || 'Failed to log in');
       }
 
-      // Redirect to dashboard or onboarding
       router.push('/dashboard');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Something went wrong');
+      setError(error instanceof Error ? error.message : 'Failed to log in');
     } finally {
       setIsLoading(false);
     }
@@ -52,9 +49,9 @@ export default function SignupPage() {
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold">Log in</CardTitle>
           <CardDescription>
-            Get started with ClosePlan for free
+            Enter your email and password to access your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -64,30 +61,8 @@ export default function SignupPage() {
                 {error}
               </div>
             )}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="firstName">First name</label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="lastName">Last name</label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
             <div className="space-y-2">
-              <label htmlFor="email">Work email</label>
+              <label htmlFor="email">Email</label>
               <Input
                 id="email"
                 name="email"
@@ -105,7 +80,6 @@ export default function SignupPage() {
                 type="password"
                 required
                 disabled={isLoading}
-                minLength={8}
               />
             </div>
             <Button
@@ -113,13 +87,13 @@ export default function SignupPage() {
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading ? "Logging in..." : "Log in"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:underline">
-              Log in
+            Don't have an account?{' '}
+            <Link href="/auth/signup" className="text-blue-600 hover:underline">
+              Sign up
             </Link>
           </div>
         </CardContent>

@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/lib/prisma'
 import { getSession } from 'next-auth/react'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export async function withTenantContext(
   handler: (
@@ -41,5 +43,13 @@ export async function withTenantContext(
       // Clear tenant context
       await prisma.$executeRaw`SELECT set_tenant_context(NULL)`
     }
+  }
+}
+
+export function withTenantContextNextServer(handler: Function) {
+  return async function(req: NextRequest, ...args: any[]) {
+    // TODO: Implement tenant context logic
+    // For now, just pass through
+    return handler(req, ...args)
   }
 }

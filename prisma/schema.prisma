@@ -181,15 +181,21 @@ model Session {
 
 model User {
   id            String    @id @default(uuid()) @db.Uuid
-  name          String?
   email         String    @unique
-  emailVerified DateTime?
-  image         String?
+  firstName     String
+  lastName      String
+  password      String
+  name          String?   // Keep for NextAuth
+  image         String?   // Keep for NextAuth
+  emailVerified DateTime? // Keep for NextAuth
   tenantId      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+
+  // Relationships
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  accounts      Account[]   // Keep for NextAuth
+  sessions      Session[]   // Keep for NextAuth
   auditLogs     AuditLog[]
 
   @@index([tenantId])
@@ -247,4 +253,12 @@ model PerformanceAlert {
   timestamp DateTime @default(now())
 
   @@index([model, timestamp])
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

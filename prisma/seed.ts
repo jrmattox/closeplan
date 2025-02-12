@@ -1,45 +1,49 @@
 import { PrismaClient } from '@prisma/client'
-import { hash } from 'bcrypt'
+import { hashPassword } from '../lib/auth/password'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  // Create test tenant
+  // Create a tenant
   const tenant = await prisma.tenant.create({
     data: {
       name: 'Test Organization',
-      domain: 'test.com',
     },
   })
 
-  // Create test user
+  // Create an admin user
+  const hashedPassword = await hashPassword('password123')
+
   const user = await prisma.user.create({
     data: {
-      name: 'Test User',
-      email: 'test@test.com',
-      tenantId: tenant.id,
-      role: 'ADMIN',
-    },
-  })
-
-  // Create test department
-  const department = await prisma.department.create({
-    data: {
-      name: 'Sales',
-      type: 'SALES',
+      firstName: 'Admin',
+      lastName: 'User',
+      email: 'admin@test.com',
+      password: hashedPassword,
+      name: 'Admin User', // For NextAuth
       tenantId: tenant.id,
     },
   })
 
-  // Create test deal
-  await prisma.deal.create({
+  // Create a test deal
+  const deal = await prisma.deal.create({
     data: {
-      name: 'Test Deal',
-      stage: 'DISCOVERY',
+      title: 'Test Deal',
+      status: 'DRAFT',
+      value: new Prisma.Decimal(10000),
       tenantId: tenant.id,
-      departmentId: department.id,
-      value: 10000,
+      createdById: user.id,
+      phi: {
+        patientCount: 100,
+        location: 'Test Hospital',
+      },
     },
+  })
+
+  console.log({
+    tenant: { id: tenant.id, name: tenant.name },
+    user: { id: user.id, email: user.email },
+    deal: { id: deal.id, title: deal.title },
   })
 }
 

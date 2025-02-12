@@ -46,13 +46,13 @@ export default function HomePage() {
           variant="ghost"
           className="text-white hover:bg-white/10"
         >
-          <Link href="/login">Log in</Link>
+          <Link href="/auth/login">Log in</Link>
         </Button>
         <Button
           asChild
           className="bg-white text-blue-600 hover:bg-blue-50"
         >
-          <Link href="/signup">Get Started Free</Link>
+          <Link href="/auth/signup">Get Started Free</Link>
         </Button>
       </nav>
 
@@ -70,7 +70,7 @@ export default function HomePage() {
               asChild
               className="bg-white text-blue-600 hover:bg-blue-50"
             >
-              <Link href="/signup">Get Started Free</Link>
+              <Link href="/auth/signup">Get Started Free</Link>
             </Button>
           </div>
         </div>
