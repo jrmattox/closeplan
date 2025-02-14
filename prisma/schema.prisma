@@ -8,7 +8,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 // Enable PostgreSQL extensions
@@ -29,13 +28,18 @@ model Organization {
   settings      Json     @default("{}")
   metadata      Json?    @db.JsonB
 
+  // Add the tenant relation
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
   @@index([tenantId])
 }
 
 model Deal {
   id              String   @id @default(uuid()) @db.Uuid
-  name            String
+  title           String
+  value           Float
   stage           String
+  status          DealStatus  @default(DISCOVERY)
   organizationId  String   @db.Uuid
   tenantId        String
   departmentId    String   @db.Uuid
@@ -51,6 +55,8 @@ model Deal {
   // Relationships
   organization    Organization @relation(fields: [organizationId], references: [id])
   department      Department   @relation(fields: [departmentId], references: [id])
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+  activities      Activity[]
   auditLogs       AuditLog[]
   accessLogs      AccessLog[]
 
@@ -88,7 +94,7 @@ model AuditLog {
   id            String   @id @default(uuid()) @db.Uuid
   dealId        String   @db.Uuid
   tenantId      String
-  actorId       String   @db.Uuid
+  actorId       String   // Changed to match User id type (cuid)
   timestamp     DateTime @default(now())
 
   // Detailed audit information
@@ -97,7 +103,7 @@ model AuditLog {
 
   // Relationships
   deal          Deal     @relation(fields: [dealId], references: [id])
-  actor         User     @relation(fields: [actorId], references: [id])
+  actor         User     @relation("AuditLogActor", fields: [actorId], references: [id])
 
   @@index([dealId])
   @@index([tenantId])
@@ -110,7 +116,7 @@ model AccessLog {
   id            String   @id @default(uuid()) @db.Uuid
   dealId        String   @db.Uuid
   tenantId      String
-  userId        String   @db.Uuid
+  userId        String   // Remove @db.Uuid
   action        String
   timestamp     DateTime @default(now())
   success       Boolean
@@ -132,7 +138,7 @@ model AccessLog {
 // HIPAA Compliance: PHI Access Control
 model PhiAccess {
   id            String   @id @default(uuid()) @db.Uuid
-  userId        String   @db.Uuid
+  userId        String   // Remove @db.Uuid
   tenantId      String
   purpose       String
   accessLevel   String
@@ -151,7 +157,7 @@ model PhiAccess {
 // NextAuth Models
 model Account {
   id                String   @id @default(uuid()) @db.Uuid
-  userId            String   @db.Uuid
+  userId            String   // Changed to match User id type (cuid)
   type              String
   provider          String
   providerAccountId String
@@ -172,7 +178,7 @@ model Account {
 model Session {
   id           String   @id @default(uuid()) @db.Uuid
   sessionToken String   @unique
-  userId       String   @db.Uuid
+  userId       String   // Changed to match User id type (cuid)
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -180,23 +186,24 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(uuid()) @db.Uuid
+  id            String    @id @default(cuid())  // Keep as cuid
   email         String    @unique
-  firstName     String
-  lastName      String
-  password      String
-  name          String?   // Keep for NextAuth
-  image         String?   // Keep for NextAuth
-  emailVerified DateTime? // Keep for NextAuth
+  firstName     String?
+  lastName      String?
+  password      String?
+  name          String?   // For NextAuth
+  image         String?   // For NextAuth
+  emailVerified DateTime? // For NextAuth
   tenantId      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relationships
-  tenant        Tenant      @relation(fields: [tenantId], references: [id])
-  accounts      Account[]   // Keep for NextAuth
-  sessions      Session[]   // Keep for NextAuth
-  auditLogs     AuditLog[]
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  activities    Activity[]
+  accounts      Account[]   // For NextAuth
+  sessions      Session[]   // For NextAuth
+  auditLogs     AuditLog[] @relation("AuditLogActor")
 
   @@index([tenantId])
 }
@@ -256,9 +263,37 @@ model PerformanceAlert {
 }
 
 model Tenant {
-  id        String   @id @default(cuid())
-  name      String
-  users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  users       User[]
+  deals       Deal[]
+  activities  Activity[]
+  organizations Organization[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Activity {
+  id          String    @id @default(cuid())
+  type        String
+  description String
+  timestamp   DateTime  @default(now())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  dealId      String?
+  deal        Deal?     @relation(fields: [dealId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([dealId])
+}
+
+enum DealStatus {
+  DISCOVERY
+  EVALUATION
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
 }

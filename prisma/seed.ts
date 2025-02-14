@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, DealStatus } from '@prisma/client'
 import { hashPassword } from '../lib/auth/password'
 
 const prisma = new PrismaClient()
@@ -25,14 +25,52 @@ async function main() {
     },
   })
 
+  // Create an organization
+  const organization = await prisma.organization.create({
+    data: {
+      name: 'Test Hospital',
+      type: 'Healthcare',
+      tenantId: tenant.id,
+      settings: {},
+      metadata: {
+        region: 'North',
+        type: 'Hospital',
+      },
+    },
+  })
+
+  // Create a department
+  const department = await prisma.department.create({
+    data: {
+      name: 'Cardiology',
+      type: 'Medical',
+      organizationId: organization.id,
+      tenantId: tenant.id,
+      complianceRules: {
+        requirePhiTracking: true,
+        auditFrequency: 'daily',
+      },
+    },
+  })
+
   // Create a test deal
   const deal = await prisma.deal.create({
     data: {
       title: 'Test Deal',
-      status: 'DRAFT',
-      value: new Prisma.Decimal(10000),
+      value: 10000,
+      status: DealStatus.DISCOVERY,
+      stage: 'Initial',
       tenantId: tenant.id,
-      createdById: user.id,
+      organizationId: organization.id,
+      departmentId: department.id,
+      clinicalData: {
+        speciality: 'Cardiology',
+        procedures: ['ECG', 'Stress Test'],
+      },
+      complianceData: {
+        hipaaCompliant: true,
+        dataEncryption: 'AES-256',
+      },
       phi: {
         patientCount: 100,
         location: 'Test Hospital',
@@ -40,9 +78,39 @@ async function main() {
     },
   })
 
+  // Create an activity
+  await prisma.activity.create({
+    data: {
+      type: 'DEAL_CREATED',
+      description: 'New deal created',
+      tenantId: tenant.id,
+      userId: user.id,
+      dealId: deal.id,
+    },
+  })
+
+  // Create an audit log
+  await prisma.auditLog.create({
+    data: {
+      dealId: deal.id,
+      tenantId: tenant.id,
+      actorId: user.id,
+      details: {
+        action: 'CREATE',
+        resource: 'DEAL',
+      },
+      changes: {
+        before: null,
+        after: { title: deal.title, value: deal.value },
+      },
+    },
+  })
+
   console.log({
     tenant: { id: tenant.id, name: tenant.name },
     user: { id: user.id, email: user.email },
+    organization: { id: organization.id, name: organization.name },
+    department: { id: department.id, name: department.name },
     deal: { id: deal.id, title: deal.title },
   })
 }

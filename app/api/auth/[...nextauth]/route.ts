@@ -49,6 +49,20 @@ export const authOptions = {
   pages: {
     signIn: '/auth/login',
     signUp: '/auth/signup',
+  },
+  callbacks: {
+    session: async ({ session, user }) => {
+      if (session?.user) {
+        session.user.id = user.id
+        // Get the user's tenant
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { tenantId: true }
+        })
+        session.user.tenantId = dbUser?.tenantId
+      }
+      return session
+    }
   }
 }
 

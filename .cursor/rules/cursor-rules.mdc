@@ -1,0 +1,295 @@
+---
+description: overview of ClosePlan, A HIPAA-compliant B2B sales deal management application built with Next.js 14, Prisma, and TypeScript. Features include multi-tenant isolation, PHI data handling, audit logging, and comprehensive security measures.
+globs: *.tsx, *.ts, prisma/schema.prisma, app/**/*.ts, app/**/*.tsx, lib/**/*.ts, components/**/*.tsx, types/**/*.ts, middleware.ts
+---
+    # Cursor AI Rules
+
+    ## Project Context
+    ClosePlan is a B2B sales deal management application with HIPAA compliance requirements. The application uses:
+    - Next.js 14 with App Router
+    - PostgreSQL with Prisma ORM
+    - TypeScript
+    - Tailwind CSS with shadcn/ui
+
+    ## Code Style Rules
+
+    ### 1. TypeScript
+    - Use strict type checking
+    - Prefer interfaces over types for objects
+    - Use enums for fixed sets of values
+    - Always define return types for functions
+    - Use zod for runtime type validation
+
+    ### 2. React/Next.js
+    - Use server components by default
+    - Use client components only when needed (marked with 'use client')
+    - Follow App Router best practices
+    - Use proper error boundaries
+    - Implement proper loading states
+
+    ### 3. Database/Prisma
+    - Always include tenant isolation
+    - Use proper indexing
+    - Include audit logging for sensitive operations
+    - Handle PHI data with encryption
+    - Use transactions for multi-step operations
+
+    ### 4. Security
+    - Implement proper authentication checks
+    - Include HIPAA compliance measures
+    - Log security events
+    - Encrypt sensitive data
+    - Validate all inputs
+
+    ### 5. Component Structure
+    ```typescript
+    // Example component structure
+    import { type FC } from 'react'
+    import { z } from 'zod'
+
+    interface ComponentProps {
+      // Props with types
+    }
+
+    export const Component: FC<ComponentProps> = ({ prop1, prop2 }) => {
+      // Implementation
+    }
+    ```
+
+    ### 6. API Route Structure
+    ```typescript
+    // Example API route structure
+    import { type NextRequest } from 'next/server'
+    import { getServerSession } from 'next-auth'
+
+    export async function POST(req: NextRequest) {
+      const session = await getServerSession()
+      if (!session) return new Response('Unauthorized', { status: 401 })
+
+      // Implementation with proper error handling
+    }
+    ```
+
+    ## Common Patterns
+
+    ### 1. Form Validation
+    ```typescript
+    // Use zod schemas
+    const schema = z.object({
+      field: z.string().min(1),
+    })
+
+    // Use with react-hook-form
+    const form = useForm({
+      resolver: zodResolver(schema)
+    })
+    ```
+
+    ### 2. Database Queries
+    ```typescript
+    // Always include tenant isolation
+    const data = await prisma.deal.findMany({
+      where: {
+        tenantId: session.user.tenantId,
+        // Other filters
+      },
+      include: {
+        // Related data
+      },
+    })
+    ```
+
+    ### 3. Error Handling
+    ```typescript
+    try {
+      // Operation
+    } catch (error) {
+      // Log error
+      console.error('[Component] Operation failed:', error)
+      // Return appropriate error response
+    }
+    ```
+
+    ### 4. PHI Handling
+    ```typescript
+    // Always encrypt PHI data
+    const encryptedPHI = await encryptPHI(data)
+
+    // Log PHI access
+    await prisma.accessLog.create({
+      data: {
+        dealId,
+        userId: session.user.id,
+        action: 'PHI_ACCESS',
+        // Other fields
+      },
+    })
+    ```
+
+    ## File Organization
+    ```
+    app/
+    ├── (auth)/
+    ├── api/
+    ├── dashboard/
+    └── components/
+        ├── ui/        # Reusable UI components
+        └── features/  # Feature-specific components
+
+    lib/
+    ├── prisma/     # Database utilities
+    ├── auth/       # Authentication utilities
+    └── utils/      # General utilities
+
+    types/          # TypeScript types
+    schemas/        # Zod schemas
+    ```
+
+    ## Testing Requirements
+    - Write unit tests for utilities
+    - Write integration tests for API routes
+    - Test proper tenant isolation
+    - Verify PHI handling
+    - Test security measures
+
+    ## Documentation Requirements
+    - Document security considerations
+    - Include HIPAA compliance notes
+    - Document PHI handling procedures
+    - Add API documentation
+    - Include component usage examples
+
+    ## Environment Variables
+```env
+# Required environment variables
+DATABASE_URL="postgresql://..."        # Database connection string
+NEXTAUTH_SECRET="your-secret-here"    # NextAuth.js secret
+NEXTAUTH_URL="http://localhost:3000"   # NextAuth.js URL
+PHI_ENCRYPTION_KEY="your-key-here"     # Key for PHI encryption
+```
+
+## Build & Deployment Process
+
+### 1. Local Development
+```bash
+# Install dependencies
+npm install
+
+# Run database migrations
+npx prisma migrate dev
+
+# Start development server
+npm run dev
+```
+
+### 2. Production Build
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Build application
+npm run build
+
+# Start production server
+npm start
+```
+
+### 3. GitHub Workflow
+- Create feature branches from `main`
+- Use conventional commits:
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `chore:` for maintenance
+  - `docs:` for documentation
+- Run tests before pushing
+- Create PR with description template
+- Ensure CI passes before merging
+
+### 4. Environment Management
+- Never commit `.env` files
+- Use `.env.example` for documentation
+- Set up environment variables in:
+  - Vercel dashboard for production
+  - GitHub secrets for CI/CD
+  - Local `.env` for development
+
+### 5. CI/CD Pipeline
+```yaml
+# Example GitHub Actions workflow
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type check
+        run: npm run type-check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+  ## Current Documentation Structure
+
+### 1. Project Documentation
+- `docs/status.md`: Current implementation status
+- `docs/technical-stack.md`: Technical stack details
+- `docs/database/schema.md`: Database schema documentation
+- `docs/implementation-plan.md`: Detailed implementation plan
+
+### 2. Implementation Status
+- **Authentication**
+  - ✅ Basic auth setup with NextAuth.js
+  - ✅ Password handling with bcryptjs
+  - ✅ Security event logging
+  - ✅ Multi-tenant support
+
+- **Deal Management**
+  - ✅ Basic deal schema defined
+  - ✅ PHI encryption utilities started
+  - ✅ Deal dashboard component structure
+  - 🚧 Deal creation UI
+  - 🚧 Deal listing implementation
+  - 🚧 Document attachment system
+
+### 3. Test Coverage
+
+#### Current Test Structure
+```
+__tests__/
+├── api/
+│   ├── auth/
+│   │   └── [...nextauth].test.ts
+│   └── deals/
+│       └── route.test.ts
+├── components/
+│   └── ui/
+└── lib/
+    ├── auth/
+    └── encryption/
+```
+
+#### Test Coverage Goals
+- Unit Tests: Target 80% coverage
+- Integration Tests: Key API endpoints
+- E2E Tests: Critical user flows
+- Security Tests: PHI handling & access controls
+
+#### Priority Test Areas
+1. Authentication flows
+2. PHI data handling
+3. Multi-tenant isolation
+4. Deal CRUD operations
+5. Access logging accuracy
+    
